@@ -566,7 +566,7 @@ def check_logdir(args, base_config, restore_best_checkpoint=False):
     args.no_dir_check = True
   try:
     if args.enable_logs:
-      ckpt_dir = os.path.join(logdir, 'logs')
+      ckpt_dir = os.environ['SM_HP_TENSORBOARD_LOG_PATH']
     else:
       ckpt_dir = logdir
 
@@ -675,6 +675,10 @@ def create_logdir(args, base_config):
   logdir = base_config['logdir']
   if not os.path.exists(logdir):
     os.makedirs(logdir)
+
+  best_models_dir = os.path.join(logdir, "best_models")
+  if not os.path.exists(best_models_dir):
+      os.makedirs(best_models_dir)
 
   tm_suf = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
   shutil.copy(

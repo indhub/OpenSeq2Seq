@@ -2,7 +2,7 @@
 from __future__ import absolute_import, division, print_function
 from __future__ import unicode_literals
 
-import time
+import os, time
 
 import numpy as np
 import tensorflow as tf
@@ -42,7 +42,7 @@ def train(train_model, eval_model=None, debug_port=None):
     hooks.append(BroadcastGlobalVariablesHook(0))
 
   if master_worker:
-    checkpoint_dir = train_model.params['logdir']
+    checkpoint_dir = os.environ['SM_HP_TENSORBOARD_LOG_PATH']
     base_ckpt_dir = train_model.params['load_model']
   else:
     checkpoint_dir = None

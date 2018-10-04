@@ -36,11 +36,15 @@ def main():
   
   load_model = base_config.get('load_model', None)
   restore_best_checkpoint = base_config.get('restore_best_checkpoint', False)
-  base_ckpt_dir = check_base_model_logdir(load_model, restore_best_checkpoint)
+  #base_ckpt_dir = check_base_model_logdir(load_model, restore_best_checkpoint)
+  #Always start training from scratch
+  base_ckpt_dir = ''
   base_config['load_model'] = base_ckpt_dir
 
   # Check logdir and create it if necessary
-  checkpoint = check_logdir(args, base_config, restore_best_checkpoint)
+  #checkpoint = check_logdir(args, base_config, restore_best_checkpoint)
+  # Always start training from scratch
+  checkpoint = None
 
   # Initilize Horovod
   base_config['use_horovod'] = True
@@ -53,14 +57,14 @@ def main():
     hvd = None
 
 
-
+  args.enable_logs = True
   if args.enable_logs:
     if hvd is None or hvd.rank() == 0:
       old_stdout, old_stderr, stdout_log, stderr_log = create_logdir(
           args,
           base_config
       )
-    base_config['logdir'] = os.path.join(base_config['logdir'], 'logs')
+    #base_config['logdir'] = os.path.join(base_config['logdir'], 'logs')
 
   if args.mode == 'train' or args.mode == 'train_eval' or args.benchmark:
     if hvd is None or hvd.rank() == 0:
