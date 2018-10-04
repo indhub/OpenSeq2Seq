@@ -278,7 +278,7 @@ def log_summaries_from_dict(dict_to_log, output_dir, step):
     output_dir (str): dir containing the tensorboard file
     step (int): current training step
   """
-  sm_writer = tf.summary.FileWriterCache.get(output_dir)
+  sm_writer = tf.summary.FileWriterCache.get(os.environ['SM_HP_TENSORBOARD_LOG_PATH'])
   for tag, value in dict_to_log.items():
     if isinstance(value, tf.Summary.Value):
       sm_writer.add_summary(
@@ -481,9 +481,10 @@ def get_base_config(args):
     config_module (dict): The raw config file processed by runpy
   """
   parser = argparse.ArgumentParser(description='Experiment parameters')
-  parser.add_argument("--config_file", required=True,
-                      help="Path to the configuration file")
-  parser.add_argument("--mode", default='train',
+  parser.add_argument("--config_file",
+                      help="Path to the configuration file",
+                      default='example_configs/lm/sagemaker.py')
+  parser.add_argument("--mode", default='train_eval',
                       help="Could be \"train\", \"eval\", "
                            "\"train_eval\" or \"infer\"")
   parser.add_argument("--infer_output_file", default='infer-out.txt',

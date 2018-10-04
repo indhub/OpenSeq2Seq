@@ -43,6 +43,7 @@ def main():
   checkpoint = check_logdir(args, base_config, restore_best_checkpoint)
 
   # Initilize Horovod
+  base_config['use_horovod'] = True
   if base_config['use_horovod']:
     import horovod.tensorflow as hvd
     hvd.init(get_subcluster(), keep_global=True)
