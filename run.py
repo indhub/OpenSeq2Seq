@@ -12,6 +12,10 @@ from open_seq2seq.utils.utils import deco_print, get_base_config, check_logdir,\
 from open_seq2seq.utils import train, infer, evaluate
 
 from mpi4py import MPI
+
+import boto3
+import botocore
+
 def get_subcluster():
   comm = MPI.COMM_WORLD
   local_comm = comm.Split_type(MPI.COMM_TYPE_SHARED, comm.Get_rank())
@@ -20,7 +24,26 @@ def get_subcluster():
   subcluster_right = subcluster_left + local_size
   return [i for i in range(subcluster_left, subcluster_right)]
 
+def s3_directory_exists(key):
+    lst = key.split('/')
+    bucket_name = lst[2]
+    path = '/'.join(lst[3:]) + '/'
+
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(bucket_name)
+
+    objs = list(bucket.objects.filter(Prefix=path))
+    if len(objs) > 0:
+        return True
+    else:
+        return False
+
 def main():
+
+  log_folder = os.environ['SM_HP_TENSORBOARD_LOG_PATH']
+  if s3_directory_exists(log_folder):
+      raise ValueError("Log folder already exists")
+
   # Parse args and create config
   args, base_config, base_model, config_module = get_base_config(sys.argv[1:])
 
