@@ -7,6 +7,7 @@ import ast
 import copy
 import datetime
 import os
+import pkg_resources
 import pprint
 import runpy
 import shutil
@@ -371,10 +372,11 @@ def mask_nans(x):
 
 
 def deco_print(line, offset=0, start="*** ", end='\n'):
-  if six.PY2:
-    print((start + " " * offset + line).encode('utf-8'), end=end)
-  else:
-    print(start + " " * offset + line, end=end)
+  print((start + " " * offset + line).encode('utf-8'), end=end)
+  #if six.PY2:
+  #  print((start + " " * offset + line).encode('utf-8'), end=end)
+  #else:
+  #  print(start + " " * offset + line, end=end)
 
 
 def array_to_string(row, vocab, delim=' '):
@@ -466,6 +468,11 @@ def get_interactive_infer_results(model, sess, model_in):
 
   return model.infer(inputs, outputs)
 
+def _get_config_file_path():
+    resource_package = 'run'
+    resource_path = '/'.join(('example_configs', 'lm', 'sagemaker.py'))
+    return pkg_resources.resource_filename(resource_package, resource_path)
+
 def get_base_config(args):
   """This function parses the command line arguments, reads the config file, and
   gets the base_model from the config.
@@ -483,7 +490,7 @@ def get_base_config(args):
   parser = argparse.ArgumentParser(description='Experiment parameters')
   parser.add_argument("--config_file",
                       help="Path to the configuration file",
-                      default='example_configs/lm/sagemaker.py')
+                      default=_get_config_file_path())
   parser.add_argument("--mode", default='train_eval',
                       help="Could be \"train\", \"eval\", "
                            "\"train_eval\" or \"infer\"")
@@ -544,7 +551,7 @@ def get_base_config(args):
       parser_unk.add_argument('--' + pm, default=value, type=type(value))
     elif type(value) == bool:
       parser_unk.add_argument('--' + pm, default=value, type=ast.literal_eval)
-  config_update = parser_unk.parse_args(unknown)
+  config_update, unknown = parser_unk.parse_known_args(unknown)
   nested_update(base_config, nest_dict(vars(config_update)))
 
   return args, base_config, base_model, config_module

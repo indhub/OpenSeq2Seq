@@ -27,7 +27,7 @@ base_params = {
   "print_loss_steps": steps,
   "print_samples_steps": steps,
   "save_checkpoint_steps": steps,
-  "logdir": "/opt/ml/output",
+  "logdir": "/opt/ml/model",
   "processed_data_folder": processed_data_folder,
   "eval_steps": steps * 2,
 

@@ -38,7 +38,12 @@ def s3_directory_exists(key):
     else:
         return False
 
+
 def main():
+
+  os.environ["AWS_REGION"] = "us-east-1"
+  os.environ["S3_REQUEST_TIMEOUT_MSEC"] = "600000"
+  os.environ["PYTHONIOENCODING"] = "UTF-8"
 
   log_folder = os.environ['SM_HP_TENSORBOARD_LOG_PATH']
   if s3_directory_exists(log_folder):
@@ -52,7 +57,6 @@ def main():
         "Interactive infer is meant to be run from an IPython",
         "notebook not from run.py."
     )
-
 #   restore_best_checkpoint = base_config.get('restore_best_checkpoint', False)
 #   # Check logdir and create it if necessary
 #   checkpoint = check_logdir(args, base_config, restore_best_checkpoint)
