@@ -22,7 +22,7 @@ base_params = {
   "num_gpus": 2,
 
   "batch_size_per_gpu": 160,
-  "num_epochs": 1500,
+  "num_epochs": 150000,
   "save_summaries_steps": steps,
   "print_loss_steps": steps,
   "print_samples_steps": steps,
