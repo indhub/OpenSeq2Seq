@@ -1,5 +1,3 @@
-# coding=utf-8
-
 from collections import Counter
 import glob
 import os
@@ -35,7 +33,7 @@ class Dictionary(object):
     return self.word2idx[word]
 
   def load_vocab(self, vocab_link):
-    vocab_file = open(vocab_link, 'r', encoding="utf-8")
+    vocab_file = open(vocab_link, 'r')
     lines = vocab_file.readlines()
     n = int(lines[-1].strip())
     self.idx2word = [0 for _ in range(n)]
@@ -103,8 +101,8 @@ class Corpus(object):
 
   def preprocess(self, raw_path, proc_path):
     for filename in ['train.txt', 'valid.txt', 'test.txt']:
-      in_ = open(os.path.join(raw_path, filename), 'r', encoding="utf-8")
-      out = open(os.path.join(proc_path, filename), 'w', encoding="utf-8")
+      in_ = open(os.path.join(raw_path, filename), 'r')
+      out = open(os.path.join(proc_path, filename), 'w')
       for line in in_:
         line = re.sub('@-@', '-', line)
         line = re.sub('-', ' - ', line)
@@ -121,14 +119,14 @@ class Corpus(object):
     Add words to the dictionary only if it's in the train file
     '''
     self.dictionary.add_word(self.dictionary.UNK)
-    with open(filename, 'r', encoding="utf-8") as f:
+    with open(filename, 'r') as f:
       f.readline()
       for line in f:
         words = line.split() + [self.dictionary.EOS]
         for word in words:
           self.dictionary.add_word(word)
 
-    with open(os.path.join(proc_path, self.vocab_link), 'w', encoding="utf-8") as f:
+    with open(os.path.join(proc_path, self.vocab_link), 'w') as f:
       f.write('\t'.join(['0', self.dictionary.UNK, '0']) + '\n')
       idx = 1
       for token_id, count in self.dictionary.counter.most_common():
@@ -143,7 +141,7 @@ class Corpus(object):
   def tokenize(self, raw_path, proc_path, filename):
     unk_id = self.dictionary.word2idx[self.dictionary.UNK]
     out = open(os.path.join(proc_path, filename[:-3] + 'ids'), 'w')
-    with open(os.path.join(raw_path, filename), 'r', encoding="utf-8") as f:
+    with open(os.path.join(raw_path, filename), 'r') as f:
       ids = []
       for line in f:
         words = line.split() + [self.dictionary.EOS]
