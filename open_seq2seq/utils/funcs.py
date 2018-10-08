@@ -17,6 +17,7 @@ from .hooks import PrintSamplesHook, RunEvaluationHook, PrintLossAndTimeHook, \
 from .helpers import TransferMonitoredTrainingSession, TransferScaffold
 from open_seq2seq.data import WKTDataLayer
 
+import horovod.tensorflow as hvd
 
 def train(train_model, eval_model=None, debug_port=None):
   if eval_model is not None and 'eval_steps' not in eval_model.params:
