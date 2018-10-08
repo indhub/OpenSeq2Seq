@@ -104,7 +104,7 @@ class BMUFOptimizer(tf.train.Optimizer):
   def apply_gradients(self, grads_and_vars, global_step=None, name=None):
     must_apply_bmuf = tf.equal(tf.mod(global_step, self._bmuf_every), tf.constant(0, dtype=tf.int64))
     in_block_op = ApplyGradients(self._opt, grads_and_vars, global_step, name)
-    block_end_op = ApplyGradients(self._opt, grads_and_vars, global_step, name, block_end=False)
+    block_end_op = ApplyGradients(self._opt, grads_and_vars, global_step, name, block_end=True)
     op = tf.cond(must_apply_bmuf, true_fn=block_end_op, false_fn=in_block_op)
     return op
 
