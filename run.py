@@ -43,7 +43,9 @@ def main():
 
   os.environ["AWS_REGION"] = "us-east-1"
   os.environ["S3_REQUEST_TIMEOUT_MSEC"] = "600000"
-  os.environ["PYTHONIOENCODING"] = "UTF-8"
+  os.environ['LANG'] = 'en_US.UTF-8'
+  os.environ['LANGUAGE'] = 'en_US:en'
+  os.environ['LC_ALL'] = 'en_US.UTF-8'
 
   log_folder = os.environ['SM_HP_TENSORBOARD_LOG_PATH']
   if s3_directory_exists(log_folder):
