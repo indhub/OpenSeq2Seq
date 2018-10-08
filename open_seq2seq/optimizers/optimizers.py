@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 
 import collections
 import six
+import os
 import tensorflow as tf
 from tensorflow.python.ops import control_flow_ops
 
@@ -240,7 +241,7 @@ def optimize_loss(loss,
         )
       optimizer = OPTIMIZER_CLS_NAMES[optimizer]
     opt = optimizer(learning_rate=lr, **optimizer_params)
-    opt = BMUFOptimizer(opt)
+    opt = BMUFOptimizer(opt, block_momentum=float(os.environ['SM_HP_BLOCK_MOMENTUM']))
 
     if isinstance(loss_scaling, six.string_types):
       loss_scaling = AutomaticLossScaler(
