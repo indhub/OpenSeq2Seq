@@ -123,7 +123,8 @@ class BMUFOptimizer(tf.train.Optimizer):
     self._device_dense = device_dense
     self._device_sparse = device_sparse
     self._bmuf_every = bmuf_every
-    self._block_momentum = block_momentum
+    self._block_momentum = tf.constant(block_momentum)
+    tf.summary.scalar("block_momentum", self._block_momentum)
     self._block_lr = block_lr
     super(BMUFOptimizer, self).__init__(name=name, use_locking=use_locking)
 
