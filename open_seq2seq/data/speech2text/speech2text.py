@@ -155,7 +155,7 @@ class Speech2TextDataLayer(DataLayer):
                          1, [None], 1),
           padding_values=(
               tf.cast(0, self.params['dtype']), 0, self.target_pad_value, 0),
-      ).cache()
+      )
     else:
       indices = self.split_data(
           np.array(list(map(str, range(len(self.all_files)))))
