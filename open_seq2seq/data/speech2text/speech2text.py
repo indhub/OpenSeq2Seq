@@ -10,11 +10,25 @@ import tensorflow as tf
 import six
 from six import string_types
 from six.moves import range
+from mpi4py import MPI
 
 from open_seq2seq.data.data_layer import DataLayer
 from open_seq2seq.data.utils import load_pre_existing_vocabulary
 from .speech_utils import get_speech_features_from_file, get_speech_features
 
+def get_local_rank():
+  comm = MPI.COMM_WORLD
+  local_comm = comm.Split_type(MPI.COMM_TYPE_SHARED, comm.Get_rank())
+  local_size = local_comm.Get_size()
+  local_rank = comm.rank % local_size
+  return local_rank
+
+def get_csv():
+  """Get csv file that has the input for this particular worker"""
+  local_rank = get_local_rank()
+  csv_file = "data/librispeech/part%d.csv" % local_rank
+  print("Local rank %d using csv %s" % (local_rank, csv_file))
+  return csv_file
 
 class Speech2TextDataLayer(DataLayer):
   """Speech-to-text data layer class."""
@@ -24,7 +38,6 @@ class Speech2TextDataLayer(DataLayer):
         'num_audio_features': int,
         'input_type': ['spectrogram', 'mfcc', 'logfbank'],
         'vocab_file': str,
-        'dataset_files': list,
     })
 
   @staticmethod
@@ -34,6 +47,7 @@ class Speech2TextDataLayer(DataLayer):
         'pad_to': int,
         'max_duration': float,
         'autoregressive': bool,
+        'dataset_files': list
     })
 
   def __init__(self, params, model, num_workers, worker_id):
@@ -83,7 +97,12 @@ class Speech2TextDataLayer(DataLayer):
     self._files = None
     if self.params["interactive"]:
       return
-    for csv in params['dataset_files']:
+
+    if 'dataset_files' not in self.params:
+      print("dataset_files not set in config. Will use local_rank specific data.")
+      self.params['dataset_files'] = [get_csv()]
+
+    for csv in self.params['dataset_files']:
       files = pd.read_csv(csv, encoding='utf-8')
       if self._files is None:
         self._files = files
@@ -137,7 +156,7 @@ class Speech2TextDataLayer(DataLayer):
               [self.params['dtype'], tf.int32, tf.int32, tf.int32, tf.float32],
               stateful=False,
           ),
-          num_parallel_calls=8,
+          num_parallel_calls=16,
       )
       if self.params['max_duration'] is not None:
         self._dataset = self._dataset.filter(

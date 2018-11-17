@@ -56,6 +56,7 @@ class Model:
         'logdir': str,
         'num_gpus': int,  # cannot be used when gpu_ids is specified
         'gpu_ids': list,  # cannot be used when num_gpus is specified
+        'batch_sizes': list,
 
         'load_model': str,
 
@@ -293,7 +294,11 @@ class Model:
 
     dl_params = self._params.get('data_layer_params', {})
     if mode == 'train':
-      dl_params['batch_size'] = self._params['batch_size_per_gpu']
+        if 'batch_sizes' in self._params:
+          print("Using per GPU batch sizes")
+          dl_params['batch_size'] = self._params['batch_sizes'][hvd.local_rank()]
+        else:
+          dl_params['batch_size'] = self._params['batch_size_per_gpu']
     else:
       dl_params['batch_size'] = self._params['eval_batch_size_per_gpu']
     if 'lm_vocab_file' in self._params:
