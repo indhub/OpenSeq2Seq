@@ -26,13 +26,10 @@ base_params = {
   "save_checkpoint_steps": 200,
   "logdir": "experiments/librispeech",
 
-  "optimizer": "Momentum",
-  "optimizer_params": {
-    "momentum": 0.90,
-  },
+  "optimizer": "Adam",
   "lr_policy": poly_decay,
   "lr_policy_params": {
-    "learning_rate": 0.001,
+    "learning_rate": 0.0001,
     "power": 0.5,
   },
   "larc_params": {
