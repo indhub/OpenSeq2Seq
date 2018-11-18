@@ -116,7 +116,8 @@ class ApplyGradients():
 
 class BMUFOptimizer(tf.train.Optimizer):
   def __init__(self, optimizer, name=None, use_locking=False, device_dense='',
-               device_sparse='', bmuf_every=8, block_momentum=0.9, block_lr=1.0):
+               device_sparse='', bmuf_every=8, block_momentum=0.9, block_lr=1.0,
+               block_momentum_start_with=0, warmup_steps=1):
     if name is None:
       name = "BMUF{}".format(type(optimizer).__name__)
     self._opt = optimizer
@@ -124,14 +125,18 @@ class BMUFOptimizer(tf.train.Optimizer):
     self._device_sparse = device_sparse
     self._bmuf_every = bmuf_every
     self._block_momentum = tf.constant(block_momentum)
-    tf.summary.scalar("block_momentum", self._block_momentum)
+    self._block_momentum_start_with = block_momentum_start_with
+    self._warmup_steps = warmup_steps
     self._block_lr = block_lr
     super(BMUFOptimizer, self).__init__(name=name, use_locking=use_locking)
 
   def apply_gradients(self, grads_and_vars, global_step=None, name='apply_gradients'):
+    momentum = self._block_momentum_start_with + ( (tf.cast(global_step, tf.float32)/self._warmup_steps) * (self._block_momentum - self._block_momentum_start_with) )
+    momentum = tf.where(tf.cast(global_step, tf.float32) < self._warmup_steps, momentum, self._block_momentum)
+    tf.summary.scalar("block_momentum", momentum)
     #must_apply_bmuf = tf.equal(tf.mod(global_step, self._bmuf_every), tf.constant(0, dtype=tf.int64))
-    in_block_op = ApplyGradients(self._opt, grads_and_vars, global_step, name, self._block_momentum, self._block_lr)
-    block_end_op = ApplyGradients(self._opt, grads_and_vars, global_step, name, self._block_momentum, self._block_lr, block_end=True)
+    in_block_op = ApplyGradients(self._opt, grads_and_vars, global_step, name, momentum, self._block_lr)
+    block_end_op = ApplyGradients(self._opt, grads_and_vars, global_step, name, momentum, self._block_lr, block_end=True)
     #op = tf.cond(must_apply_bmuf, true_fn=block_end_op, false_fn=in_block_op)
     return in_block_op(), block_end_op()
 
@@ -270,7 +275,7 @@ def optimize_loss(loss,
     if dtype == 'mixed':
       opt = MixedPrecisionOptimizerWrapper(opt, loss_scale=loss_scaling)
 
-    opt = BMUFOptimizer(opt, block_momentum=float(os.environ['SM_HP_BLOCK_MOMENTUM']))
+    opt = BMUFOptimizer(opt, block_momentum=float(os.environ['SM_HP_BLOCK_MOMENTUM']), block_momentum_start_with=0, warmup_steps=1000)
 
     # Compute gradients.
     grads_and_vars = opt.compute_gradients(
