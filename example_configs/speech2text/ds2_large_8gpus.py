@@ -12,26 +12,30 @@ base_model = Speech2Text
 
 base_params = {
   "random_seed": 0,
-  "use_horovod": False,
+  "use_horovod": True,
   "num_gpus": 8,
   "batch_size_per_gpu": 16,
   #"batch_sizes": [16, 17, 14, 11, 8, 8, 6, 4],
+  "iter_size": 1,
 
-  "num_epochs": 50,
+  #"num_epochs": 200,
+  "max_steps": 13600,
 
   "save_summaries_steps": 100,
   "print_loss_steps": 10,
-  "print_samples_steps": 5000,
-  "eval_steps": 1000,
-  "save_checkpoint_steps": 200,
+  "print_samples_steps": 1000,
+  "eval_steps": 200,
+  "save_checkpoint_steps": 1000,
   "logdir": "experiments/librispeech",
+
 
   "optimizer": "Adam",
   "lr_policy": poly_decay,
   "lr_policy_params": {
     "learning_rate": 0.0001,
-    "power": 0.5,
+    "power": 0.50,
   },
+
   "larc_params": {
     "larc_eta": 0.001,
   },
@@ -120,6 +124,7 @@ eval_params = {
     "dataset_files": [
       "data/librispeech/librivox-dev-clean.csv",
     ],
+
     "shuffle": False,
   },
 }
